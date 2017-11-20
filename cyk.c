@@ -7,7 +7,7 @@
 /* Global variables */
 int P, NP, LENGTH;
 char DP[MAX_SIZE][MAX_SIZE][20], Gram[MAX_SIZE][MAX_SIZE][20];
-char baris[10][MAX_SIZE];
+char baris[200][MAX_SIZE];
 
 void concat(char *a[], char b[20]){
 	int i;
@@ -47,17 +47,24 @@ void break_grammar(int row, char a[20]){ //separate LHS and RHS and insert them 
 
 void combine(char A[20], char B[20], int *count){ //generate every combination of 2 strings
 	int i,j;
-	char tmp[20];
+	char tmp[3];
 
 	for(i=0; i<strlen(A); i++){
 		for(j=0; j<strlen(B); j++){
 			strcpy(tmp, "");
+			/*
 			tmp[0] = A[i];
 			tmp[1] = B[j];
+			*/
+			//printf("%s\n", tmp);
+			sprintf(tmp, "%c%c", A[i], B[j]);
+			//printf("%s\n", tmp);
+			//printf("\ntmp : %c %c %s\n",A[i], B[j], tmp);
 			strcpy(baris[*count], tmp);
 			(*count)++;
 		}
 	}
+	//printf(" %d ",*count);
 }
 
 void printCYK(int len){
@@ -84,15 +91,15 @@ void printProd(int N){
 }
 
 /* sample
-S->AB|BC
+S->AB|BD
 A->a|BA
-B->CC|b
-C->AB|a
+B->DD|b
+D->AB|a
 */
 
 int main(){
 	int i, j, k, l, m, n, prodNum;
-	char start, prod[MAX_SIZE], strInput[MAX_SIZE], tmp[2], copy[10];
+	char start, prod[MAX_SIZE], strInput[MAX_SIZE], tmp, copy[10];
 
 	printf("\nEnter start variable : ");
 	scanf("%c",&start);
@@ -113,13 +120,13 @@ int main(){
 	for(i=0; i<LENGTH; i++){
 
 		/* Initialize */
-		tmp[0] = strInput[i];
+		tmp = strInput[i];
 		strcpy(copy, "");
 
 		for(j=0; j<prodNum; j++){
 			for(k=1; k<10; k++){
 				if(strlen(Gram[j][k]) == 1){
-					if(strcmp(Gram[j][k], tmp) == 0){
+					if(Gram[j][k][0] == tmp){
 						strcat(copy, Gram[j][0]);
 					}
 				}
@@ -134,7 +141,7 @@ int main(){
 		char A[5], B[5], ans[5];
 		int cnt=0;
 		strcpy(copy, "");
-		memset(baris, 0, sizeof baris);
+		//memset(baris, 0, sizeof baris);
 
 		for(j=i; j<LENGTH; j++){
 			cnt = 0;
@@ -185,9 +192,9 @@ int main(){
 	printf("CYK Table :\n");
 	printCYK(LENGTH);
 
-	/* Print token of productions
+	/* Print token of productions */
 	printProd(prodNum);
-	*/
+	
 
 	/* Check whether the string can be generated or not */
 	bool isAvail=false;
