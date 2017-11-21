@@ -8,12 +8,10 @@
 #define MAX_SIZE 500
 
 /* Global variables */
-int P, prodNum, NInput, LENGTH;
+int prodNum, NInput, LENGTH;
 char Input[ROW_SIZE][MAX_SIZE];
 char currInputArray[MAX_SIZE][MAX_SIZE];
-char DP[ROW_SIZE][COL_SIZE][MAX_SIZE];
 char Gram[ROW_SIZE][COL_SIZE][MAX_SIZE];
-char stateNow[MAX_SIZE];
 
 
 void break_grammar(int row, char a[20]){ //separate LHS and RHS and insert them to the matrix
@@ -51,17 +49,13 @@ void break_input(char a[20], int *N){ //separate LHS and RHS and insert them to 
 	*N = idx;
 }
 
-char* combine(char A[20], char B[20]){
-	int i,j;
-	char tmp[20];
+int checkToken(int i){
+	int j;
 
-	for(i=0; i<strlen(A); i++){
-		for(j=0; j<strlen(B); j++){
-			strcpy(tmp, "");
-			tmp[0] = A[i];
-			tmp[1] = B[j];
-		}
-	}
+	for(j=0; j<prodNum; j++)
+		if(strcmp(currInputArray[i], Gram[j][1])==0) return j;
+
+	return -1;
 }
 
 
@@ -73,6 +67,7 @@ int main(){
 	scanf("%c",&start);
 	printf("\nNumber of productions : ");
 	scanf("%d ", &prodNum);
+	printf("\nInput production rules :");
 
 	/* Input CFG in CNF form */
 	for(i=0; i<prodNum; i++){
@@ -97,42 +92,35 @@ int main(){
 		strtok(Input[i], "\n");
 	}
 
-	/* Fill in the main diagonal of matrix */
+	/* Tokenizer */
 	for(h=0; h<NInput; h++){
 
 		/* Initialize */
 		char currInput[100];
 		int num_of_input;
+
 		strcpy(currInput, Input[h]);
 		LENGTH = strlen(Input[h]); //Length of current input line
 		memset(currInputArray, 0, sizeof currInputArray); //Set array to empty
 		break_input(Input[h], &num_of_input);
 
 		for(i=0; i<num_of_input; i++){
-			bool isFound = false;
-			for(j=0; j<prodNum; j++){
-				if(strcmp(currInputArray[i], Gram[j][1])==0){
-					printf("<%d>",j+1);
-					isFound = true;
-					break;
-				}
-			}
-			if(!isFound){
-				int cntNum=0;
+			int idxToken;
+
+			idxToken = checkToken(i);
+			if(idxToken != -1) printf("<%s>",Gram[idxToken][1]);
+			else{
+
+				/* Check whether it is categorized as "word" or "constant" */
 				bool isNum=true;
 				for(j=0; j<strlen(currInputArray[i]); j++){
 					if(isalpha(currInputArray[i][j])) isNum = false;
-					if(isdigit(currInputArray[i][j])) cntNum++;
 				}
-				if(!isNum && cntNum == 0) strcpy(currInputArray[i], "word");
+				if(!isNum) strcpy(currInputArray[i], "word");
 				else if(isNum) strcpy(currInputArray[i], "constant");
-				for(j=0; j<prodNum; j++){
-					if(strcmp(currInputArray[i], Gram[j][1])==0){
-						printf("<%d>",j+1);
-						isFound = true;
-						break;
-					}
-				}
+
+				idxToken = checkToken(i);
+				if(idxToken != -1) printf("<%s>",Gram[idxToken][1]);
 			}
 		}
 		printf("\n");
