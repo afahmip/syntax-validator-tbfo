@@ -29,22 +29,21 @@ void break_grammar(int row, char a[20]){ //separate LHS and RHS and insert them 
 	}
 }
 
-int checkToken(char isi[MAX_SIZE]){
-	int j;
+int checkToken(char isi[MAX_SIZE]){ //Check if input available in token
+	int i;
 
-	for(j=0; j<prodNum; j++)
-		if(strcmp(isi, Gram[j][1])==0) return j;
+	for(i=0; i<prodNum; i++)
+		if(strcmp(isi, Gram[i][1])==0) return i;
 
 	return -1;
 }
 
-void break_input(char a[20], int row, int *N){ //separate LHS and RHS and insert them to the matrix
-	int i, j, k, idx = 0, tokenIndex, tokenPerRow;
-	char *token, token_two[MAX_SIZE];
-	bool isSemicolon=false, isPeriod=false;
+void break_input(char a[20], int row, int *N){ //Parsing input
+	int i, j, k, idx, tokenIndex;
+	char *token;
 
 	token = strtok(a, " ");
-	tokenPerRow = 1;
+	idx = 1;
 
 	while(token != NULL){
 		char temp[MAX_SIZE], currTemp[2], nextTemp[2];
@@ -67,47 +66,36 @@ void break_input(char a[20], int row, int *N){ //separate LHS and RHS and insert
 					/* Parse again */
 					if(!isNum){ //if alphanumeric
 						tokenIndex = checkToken(temp);
-						//printf("token %d ",tokenIndex);
 						if(tokenIndex == -1){ //if word
 							strcpy(currInputArray[idx], "word");
+							tokenList[row][idx] = checkToken("word");
 							idx++;
-							tokenList[row][tokenPerRow] = 1;
-							tokenPerRow++;
-							//printf("token %s ", temp);
 						}else{ //if not word
 							strcpy(currInputArray[idx], temp);
+							tokenList[row][idx] = tokenIndex;
 							idx++;
-							tokenList[row][tokenPerRow] = tokenIndex;
-							tokenPerRow++;
-							//printf("token %s ", temp);
 						}
 					}else{ //if number
 						strcpy(currInputArray[idx], "constant");
+						tokenList[row][idx] = checkToken("constant");
 						idx++;
-						tokenList[row][tokenPerRow] = 40;
-						tokenPerRow++;
-						//printf("token %s ", temp);
 					}
 
 					strcpy(temp, "");
 
 				}
 
-			}else{
-				//printf("currTemp %s ",currTemp);
+			}else{ //if not alphanumeric
+
 				tokenIndex = checkToken(currTemp);
 				if(tokenIndex != -1){ //if found
 					strcpy(currInputArray[idx], currTemp);
+					tokenList[row][idx] = tokenIndex;
 					idx++;
-					tokenList[row][tokenPerRow] = tokenIndex;
-					tokenPerRow++;
-					//printf("token %s ", currTemp);
 				}else{ //if not found
 					strcpy(currInputArray[idx], "NOT_FOUND");
+					tokenList[row][idx] = -999;
 					idx++;
-					tokenList[row][tokenPerRow] = -1;
-					tokenPerRow++;
-					//printf("token NOT_FOUND");
 				}
 			}
 		}
@@ -115,8 +103,8 @@ void break_input(char a[20], int row, int *N){ //separate LHS and RHS and insert
 		token = strtok(NULL, " ");
 	}
 
-	tokenList[row][0] = tokenPerRow;
-	*N = idx;
+	tokenList[row][0] = idx;
+	*N = idx-1;
 	printf("\n");
 }
 
@@ -129,7 +117,7 @@ int main(){
 	scanf("%c",&start);
 	printf("\nNumber of productions : ");
 	scanf("%d ", &prodNum);
-	printf("\nInput production rules :");
+	printf("\nInput production rules :\n");
 
 	/* Input CFG in CNF form */
 	for(i=0; i<prodNum; i++){
@@ -156,7 +144,6 @@ int main(){
 
 	/* Tokenizer */
 	for(h=0; h<NInput; h++){
-
 		/* Initialize */
 		char currInput[100];
 		int num_of_input;
