@@ -112,21 +112,28 @@ void break_input(char a[20], int row, int *N){ //Parsing input
 int main(){
 	int h, i, j, k, l, m, n;
 	char start, prod[MAX_SIZE], strInput[MAX_SIZE], tmp[2], copy[10];
+	FILE *fileInput;
 
-	printf("\nEnter start variable : ");
-	scanf("%c",&start);
-	printf("\nNumber of productions : ");
-	scanf("%d ", &prodNum);
-	printf("\nInput production rules :\n");
+	printf("Tubes TBFO II : 2nd Milestone - THE TOKENIZER\n");
+	printf("             ---- Created by : ----          \n");
+	printf("------  Ahmad Fahmi Pratama - 13516139 ------\n");
+	printf("------     Joseph Salimin - 13516037   ------\n");
+	printf("------   Adylan Roaffa Ilmy - 13516016 ------\n");
+	printf("---------------------------------------------\n\n");
 
-	/* Input CFG in CNF form */
-	for(i=0; i<prodNum; i++){
-		fgets(prod, MAX_SIZE, stdin);
+	printf("\nCFG (Terminals only) :\n\n");
+	prodNum = 0;
+	fileInput = fopen("input.txt", "r");
+	while(!feof(fileInput)){
+		fgets(prod, MAX_SIZE, fileInput);
 		strtok(prod, "\n");
-		break_grammar(i, prod);
+		printf("%s\n", prod);
+		break_grammar(prodNum, prod);
+		prodNum++;
 	}
 
 	/* Print token of productions */
+	printf("\nToken :\n\n");
 	for(i=0; i<prodNum; i++){
 		printf("<%d> ",i+1);
 		for(j=1; j<3; j++){
@@ -134,6 +141,9 @@ int main(){
 		}
 		printf("\n");
 	}
+
+	printf("\nEnter start variable : ");
+	scanf("%c",&start);
 
 	printf("\nNumber of input lines : ");
 	scanf("%d ", &NInput);
