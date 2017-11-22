@@ -22,7 +22,6 @@ PROGRAM -> Program
 VAR -> Var
 BEGIN -> Begin
 END -> End
-CONSTANT -> k
 ARR -> array
 OF -> of
 IF -> If
