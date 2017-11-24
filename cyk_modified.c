@@ -3,25 +3,26 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define ROW_SIZE 200
-#define COL_SIZE 50
+/* They need big size ofc */
+#define ROW_SIZE 500
+#define COL_SIZE 500
 #define MAX_SIZE 500
+#define STR_SIZE 500
 
 typedef struct{
 	int tknIdx;
-	char term[100];
-}TERMINAL, NONTERMINAL, GRAMMAR;
+	char term[500];
+}TERMINAL, NONTERMINAL;
 
 /* Global variables */
 int NInput, LENGTH, NTSize, TSize, startToken;
-char Input[ROW_SIZE][MAX_SIZE];
-char CFG[ROW_SIZE][COL_SIZE][20];
-char Gram[ROW_SIZE][COL_SIZE][MAX_SIZE];
-TERMINAL terminalList[ROW_SIZE];
-NONTERMINAL nonterminalList[ROW_SIZE];
-int tokenInput[ROW_SIZE][COL_SIZE];
-char DP[MAX_SIZE][MAX_SIZE][20];
-char baris[200][MAX_SIZE];
+char Input[ROW_SIZE][MAX_SIZE];				//for input
+char Gram[ROW_SIZE][COL_SIZE][MAX_SIZE];	//for grammar (in tokenized format)
+TERMINAL terminalList[ROW_SIZE];			//for terminals (content + token)
+NONTERMINAL nonterminalList[ROW_SIZE];		//for nonterminals (content + token)
+int tokenInput[ROW_SIZE][COL_SIZE];			//saving tokenized input lines
+char DP[MAX_SIZE][MAX_SIZE][STR_SIZE];		//CYK table
+char baris[500][MAX_SIZE];					//saving temporary precomputed pairs of rules
 
 int checkToken(char isi[MAX_SIZE]){ //Check if input available in token
 	int i;
@@ -64,11 +65,9 @@ void break_grammar(int row, char *a){ //separate LHS and RHS and insert them to 
 		}
 		token = strtok(NULL, " ");
 	}
-	//printf("\n");
 }
 
-/* JANGAN DIOTAK ATIK */
-void break_input(char a[20], int row){ //Parsing input
+void break_input(char a[STR_SIZE], int row){ //Parsing input
 	int i, j, k, idx, tokenIndex;
 	char *token;
 	char currInputArray[MAX_SIZE][MAX_SIZE];
@@ -139,10 +138,10 @@ void break_input(char a[20], int row){ //Parsing input
 	tokenInput[row][0] = idx;
 }
 
-void combine(char A[20], char B[20], int *count){ //generate every combination of 2 strings
+void combine(char A[STR_SIZE], char B[STR_SIZE], int *count){ //generate every combination of 2 strings
 	int i, j, nA=0, nB=0;
 	char tmp[MAX_SIZE], sA[MAX_SIZE], sB[MAX_SIZE];
-	char tA[MAX_SIZE][20], tB[MAX_SIZE][20], *token;
+	char tA[MAX_SIZE][STR_SIZE], tB[MAX_SIZE][STR_SIZE], *token;
 
 	strcpy(sA, A);
 	strcpy(sB, B);
@@ -187,25 +186,31 @@ void combine(char A[20], char B[20], int *count){ //generate every combination o
 	}
 }
 
-void printCYK(int len){
+void print_cyk(int len){
 	int i,j,k;
 
 	for(i=0; i<len; i++){
+		if(i == 1) printf("|-|\n");
 		k = 0;
 		for(j=len-i-1; j<len; j++){
-			printf("{%s}\t", DP[k++][j]);
+			printf("| %s", DP[k][j]);
+			k++;
 		}
-		printf("\n");
+		printf("|\n");
 	}
+}
+
+void check_error(){
+
 }
 
 int main(){
 	int h, i, j, k, l, m, n;
 	char start[2], prod[MAX_SIZE], TERM[MAX_SIZE];
-	FILE *fileInput, *fileTerminal, *fileNonTerminal;
+	FILE *fileInput, *fileTerminal, *fileNonTerminal, *fileOutput, *fileToken;
 
 	printf("Tubes TBFO II : SYNTAX VALIDATOR YOOOOOOOOOOO\n");
-	printf("             ---- Created by : ----          \n");
+	printf("            ---- Created by : ----           \n");
 	printf("------  Ahmad Fahmi Pratama - 13516139 ------\n");
 	printf("------     Joseph Salimin - 13516037   ------\n");
 	printf("------   Adylan Roaffa Ilmy - 13516016 ------\n");
@@ -242,7 +247,7 @@ int main(){
 		}
 		currToken++;
 	}
-	TSize = currToken - 1;
+	TSize = currToken - 1 - NTSize;
 
 	i = 0;
 	fileInput = fopen("grammar.txt", "r");
@@ -254,12 +259,18 @@ int main(){
 		i++;
 	}
 
-	printf("\nEnter start variable : ");
-	scanf("%s",&start);
-	startToken = checkToken(start);
+	fclose(fileNonTerminal);
+	fclose(fileTerminal);
+	fclose(fileInput);
 
-	printf("\nNumber of input lines : ");
-	scanf("%d ", &NInput);
+	//printf("Enter start variable : ");
+	//scanf("%s",&start);
+	//startToken = checkToken(start);
+
+	printf("Number of input lines : ");
+	scanf("%d", &NInput);
+	fflush(stdin);
+	printf("\nInput your codes here :\n");
 	for(i=0; i<NInput; i++){
 		fgets(Input[i], MAX_SIZE, stdin);
 		strtok(Input[i], "\n");
@@ -294,7 +305,7 @@ int main(){
 	for(i=1; i<LENGTH; i++){
 
 		/* Initialize */
-		char A[20], B[20], ans[MAX_SIZE];
+		char A[STR_SIZE], B[STR_SIZE], ans[MAX_SIZE];
 		int cnt=0;
 		strcpy(temp, "");
 		memset(baris, 0, sizeof baris);
@@ -319,11 +330,16 @@ int main(){
 
 							/* Cek duplicate character */
 							bool isExist = false;
-							char exist[3];
+							char exist[100], ansN[2];
+							strcpy(exist, "");
 							for(n=0; n<strlen(ans); n++){
-								strcpy(exist, "");
-								exist[0] = ans[n];
-								if(strcmp(exist, Gram[k][0])==0)isExist = true;
+								if(ans[n] != ' '){
+									sprintf(ansN, "%c", ans[n]);
+									strcat(exist, ansN);
+								}else{
+									if(strcmp(exist, Gram[k][0])==0)isExist = true;
+									strcpy(exist, "");
+								}
 							}
 							if(!isExist){
 								strcat(ans, Gram[k][0]);
@@ -339,11 +355,35 @@ int main(){
 		}
 	}
 
-	//printCYK(LENGTH);
+	fileToken = fopen("tokenlist.md", "w");
+	fprintf(fileToken, "| Token | Non-Terminal | | Token | Terminal |\n");
+	fprintf(fileToken, "|-|-|-|-|-|\n");
+	for(i=0; i<NTSize; i++){
+		fprintf(fileToken, "| %d | %s |",	nonterminalList[i].tknIdx, nonterminalList[i].term);
+		if(terminalList[i].tknIdx != 0)
+			fprintf(fileToken, "| %d | %s |\n", terminalList[i].tknIdx, terminalList[i].term);
+		else fprintf(fileToken, "| | |\n");
+	}
+	fclose(fileToken);
+
+
+	fileOutput = fopen("cyktable.md", "w");
+	for(i=0; i<LENGTH; i++){
+		k = 0;
+		if(i == 1) fprintf(fileOutput, "|-|\n"); //for .md table format
+		for(j=LENGTH-i-1; j<LENGTH; j++){
+			fprintf(fileOutput, "| %s", DP[k][j]);
+			k++;
+		}
+		fprintf(fileOutput, "|\n");
+	}
+	fclose(fileOutput);
+
+
 	bool isAccepted = false;
 	for(i=0; i<strlen(DP[0][LENGTH-1]); i++)
 		if(DP[0][LENGTH-1][i] == '1') isAccepted = true;
 
-	if(isAccepted) printf("Verdict : Compile success!\n");
-	else printf("Verdict : Compile error!\n");
+	if(isAccepted) printf("\nVerdict : Compile success!\n");
+	else printf("\nVerdict : Compile error!\n");
 }
