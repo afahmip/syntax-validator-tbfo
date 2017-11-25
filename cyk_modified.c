@@ -204,6 +204,11 @@ void check_error(){
 
 }
 
+void stdin_flush(){
+	char something[2];
+	fgets(something, 2, stdin);
+}
+
 int main(){
 	int h, i, j, k, l, m, n;
 	char start[2], prod[MAX_SIZE], TERM[MAX_SIZE];
@@ -263,13 +268,10 @@ int main(){
 	fclose(fileTerminal);
 	fclose(fileInput);
 
-	//printf("Enter start variable : ");
-	//scanf("%s",&start);
-	//startToken = checkToken(start);
-
+	/* Input code */
 	printf("Number of input lines : ");
 	scanf("%d", &NInput);
-	fflush(stdin);
+	stdin_flush();
 	printf("\nInput your codes here :\n");
 	for(i=0; i<NInput; i++){
 		fgets(Input[i], MAX_SIZE, stdin);
@@ -280,6 +282,15 @@ int main(){
 	for(i=0; i<NInput; i++){
 		break_input(Input[i], i);
 	}
+
+	/* print token matrix */
+	/*
+	for(i=0; i<NInput; i++){
+		for(j=1; j<tokenInput[i][0]; j++){
+			printf("%d ", tokenInput[i][j]);
+		}
+		printf("\n");
+	}*/
 
 	char temp[MAX_SIZE], copy[MAX_SIZE];
 	/* Let's do the CYK */
