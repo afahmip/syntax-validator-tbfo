@@ -17,7 +17,7 @@ typedef struct{
 /* Global variables */
 int NInput, LENGTH, NTSize, TSize, startToken;
 char Input[ROW_SIZE][MAX_SIZE];				//for input
-char Gram[ROW_SIZE][COL_SIZE][MAX_SIZE];	//for grammar (in tokenized format)
+char Gram[ROW_SIZE][COL_SIZE][MAX_SIZE];	//saving tokenized grammar
 TERMINAL terminalList[ROW_SIZE];			//for terminals (content + token)
 NONTERMINAL nonterminalList[ROW_SIZE];		//for nonterminals (content + token)
 int tokenInput[ROW_SIZE][COL_SIZE];			//saving tokenized input lines
@@ -38,6 +38,22 @@ int checkToken(char isi[MAX_SIZE]){ //Check if input available in token
 	}
 
 	return -1;
+}
+
+char* check_content(int tokenIndex){
+	int i;
+
+	/* Check in terminal list */
+	for(i=0; i<TSize; i++){
+		if(terminalList[i].tknIdx == tokenIndex) return terminalList[i].term;
+	}
+
+	/* Check in nonterminal list */
+	for(i=0; i<NTSize; i++){
+		if(nonterminalList[i].tknIdx == tokenIndex) return nonterminalList[i].term;
+	}
+
+	return "NOT_FOUND";
 }
 
 void break_grammar(int row, char *a){ //separate LHS and RHS and insert them to the matrix
@@ -186,6 +202,17 @@ void combine(char A[STR_SIZE], char B[STR_SIZE], int *count){ //generate every c
 	}
 }
 
+void print_tokeninput(){
+	int i, j;
+
+	for(i=0; i<NInput; i++){
+		for(j=1; j<tokenInput[i][0]; j++){
+			printf("%d ", tokenInput[i][j]);
+		}
+		printf("\n\n");
+	}
+}
+
 void print_cyk(int len){
 	int i,j,k;
 
@@ -200,7 +227,30 @@ void print_cyk(int len){
 	}
 }
 
+void print_grammar(){
+	int i, j, x;
+
+	for(i=0; i<NTSize; i++){
+		for(j=0; j<25; j++){
+			x = checkToken(Gram[i][j]);
+			printf("%s ", Gram[i][j]);
+		}
+		printf("\n");
+
+
+	}
+}
+
 void check_error(){
+	/*
+	if line = 0 then 
+	   if program then kol++ else break
+	if line=1 then 
+	   if var or begin then kol ++
+	else break
+	*/
+	int i, j, k;
+
 
 }
 
@@ -255,6 +305,7 @@ int main(){
 	TSize = currToken - 1 - NTSize;
 
 	i = 0;
+	int x;
 	fileInput = fopen("grammar.txt", "r");
 	while(!feof(fileInput)){
 		fgets(prod, MAX_SIZE, fileInput);
@@ -267,6 +318,8 @@ int main(){
 	fclose(fileNonTerminal);
 	fclose(fileTerminal);
 	fclose(fileInput);
+
+	//print_grammar();
 
 	/* Input code */
 	printf("Number of input lines : ");
@@ -282,15 +335,6 @@ int main(){
 	for(i=0; i<NInput; i++){
 		break_input(Input[i], i);
 	}
-
-	/* print token matrix */
-	/*
-	for(i=0; i<NInput; i++){
-		for(j=1; j<tokenInput[i][0]; j++){
-			printf("%d ", tokenInput[i][j]);
-		}
-		printf("\n");
-	}*/
 
 	char temp[MAX_SIZE], copy[MAX_SIZE];
 	/* Let's do the CYK */
@@ -390,6 +434,7 @@ int main(){
 	}
 	fclose(fileOutput);
 
+	//print_tokeninput();
 
 	bool isAccepted = false;
 	for(i=0; i<strlen(DP[0][LENGTH-1]); i++)
@@ -397,4 +442,6 @@ int main(){
 
 	if(isAccepted) printf("\nVerdict : Compile success!\n");
 	else printf("\nVerdict : Compile error!\n");
+
+	return 0;
 }
