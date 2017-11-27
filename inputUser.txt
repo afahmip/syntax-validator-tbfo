@@ -1,0 +1,10 @@
+Program tbfo;
+Var
+  i : int;
+Begin
+i := i+1;
+If (i > 9) then
+Begin
+Input(i);
+End;
+End.

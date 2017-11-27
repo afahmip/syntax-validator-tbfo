@@ -254,34 +254,9 @@ void check_error(){
 
 }
 
-void readFileInputUser() {
-	FILE *fileUser;
-	fileUser = fopen("inputUser.txt", "r");
-	NInput = 0;
-	while (!feof(fileUser)) {
-		fgets(Input[NInput], MAX_SIZE, fileUser);
-		strtok(Input[NInput], "\n");
-		NInput++;
-	}
-	fclose(fileUser);
-}
-
 void stdin_flush(){
 	char something[2];
 	fgets(something, 2, stdin);
-}
-
-void readFromTerminal() {
-	int i;
-
-	printf("Number of input lines : ");
-	scanf("%d", &NInput);
-	stdin_flush();
-	printf("\nInput your codes here :\n");
-	for(i = 0; i < NInput; i++){
-		fgets(Input[i], MAX_SIZE, stdin);
-		strtok(Input[i], "\n");
-	}
 }
 
 int main(){
@@ -297,8 +272,8 @@ int main(){
 	printf("---------------------------------------------\n\n");
 
 	/* Tokenize the nonterminal */
-	i = 0;
 	fileNonTerminal = fopen("nonterminal.txt", "r");
+	i = 0;
 	int currToken = 1;
 	while(!feof(fileNonTerminal)){
 		fgets(TERM, MAX_SIZE, fileNonTerminal);
@@ -311,9 +286,10 @@ int main(){
 	NTSize = i;
 
 	/* Tokenize the terminal */
-	i = 0;
 	fileTerminal = fopen("terminal.txt", "r");
+	i = 0;
 	char *token;
+
 	while(!feof(fileTerminal)){
 		fgets(TERM, MAX_SIZE, fileTerminal);
 		strtok(TERM, "\n");
@@ -328,8 +304,8 @@ int main(){
 	}
 	TSize = currToken - 1 - NTSize;
 
-	/* Get the grammar */
 	i = 0;
+	int x;
 	fileInput = fopen("grammar.txt", "r");
 	while(!feof(fileInput)){
 		fgets(prod, MAX_SIZE, fileInput);
@@ -346,15 +322,13 @@ int main(){
 	//print_grammar();
 
 	/* Input code */
-	printf("Select input method (Terminal 1, File 2) : ");
-	scanf("%d", &i);
-
-	if (i == 1) {
-		readFromTerminal();
-	} else if (i == 2) {
-		readFileInputUser();
-	} else {
-		goto Exit;
+	printf("Number of input lines : ");
+	scanf("%d", &NInput);
+	stdin_flush();
+	printf("\nInput your codes here :\n");
+	for(i=0; i<NInput; i++){
+		fgets(Input[i], MAX_SIZE, stdin);
+		strtok(Input[i], "\n");
 	}
 
 	/* Convert input strings into tokens */
@@ -469,6 +443,5 @@ int main(){
 	if(isAccepted) printf("\nVerdict : Compile success!\n");
 	else printf("\nVerdict : Compile error!\n");
 
-	Exit:
 	return 0;
 }
